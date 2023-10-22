@@ -4,7 +4,7 @@
 #define POINT_CNT 200000
 #define SCAN_DELAY 5
 
-float cross_corr(double*, double*, int);
+double cross_corr(double*, double*, int);
 int fill_mem_from_file(char*, double**);
 
 #endif // !_CC_LIB_H

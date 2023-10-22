@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <fcntl.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,17 +9,30 @@
 
 #include "cc_lib.h"
 
-float cross_corr(double *ref, double *cmp, int N) {
+double signal_amp(double *sig, int N) {
   double result = 0;
 
-  for (int delay=-SCAN_DELAY; delay<SCAN_DELAY; delay++) {
+  for (size_t i=0; i<(size_t)N; i++) {
+    result += sig[i] * sig[i];
+  }
+
+  return sqrt(result);
+}
+
+double cross_corr(double *ref, double *cmp, int N) {
+  double result = 0;
+  double ref_amp = signal_amp(ref, N);
+  double cmp_amp = signal_amp(cmp, N);
+
+  // for (int delay=-SCAN_DELAY; delay<SCAN_DELAY; delay++) {
+  int delay = 0;
     for (int i=0; i<N; i++) {
       if (i-delay < 0 || i-delay >= N) continue;
       result += ref[i] * cmp[i-delay];
-    }
+    // }
   }
 
-  return result;
+  return result / (ref_amp * cmp_amp);
 }
 
 int fill_mem_from_file(char *fname, double **data) {
@@ -34,7 +48,7 @@ int fill_mem_from_file(char *fname, double **data) {
     return -1;
   }
 
-  char *fc = (char*)mmap(NULL, file_stats.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+  char *fc = (char*)mmap(NULL, (size_t)file_stats.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
   if (fc == NULL) {
     fprintf(stderr, "Could not memory-map %s: %s\n", fname, strerror(errno));
     return -1;
