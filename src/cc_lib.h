@@ -5,7 +5,15 @@
 #define POINT_CNT 200000
 #define SCAN_DELAY 5
 
-double cross_corr(double*, double*, int);
+typedef struct {
+  double *ref_data;
+  double *cmp_data;
+  int length;
+  double *result;
+} ThreadInput;
+
+void *cross_corr(void*);
+// double cross_corr(double*, double*, int);
 int fill_mem_from_file(char*, double**);
 
 #endif // !_CC_LIB_H
