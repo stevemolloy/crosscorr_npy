@@ -1,4 +1,5 @@
 #ifndef _CC_LIB_H
+#define _CC_LIB_H
 
 #define BPM_CNT 201
 #define POINT_CNT 200000
