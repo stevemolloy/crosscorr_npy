@@ -29,6 +29,7 @@ void *cross_corr(void *ti) {
   *threadinput->result = 0;
   double ref_amp = signal_amp(threadinput->ref_data, threadinput->length);
   double cmp_amp = signal_amp(threadinput->cmp_data, threadinput->length);
+  printf("ref_amp = %lf :: cmp_amp = %lf\n", ref_amp, cmp_amp);
 
   int delay = 0;
   for (int i=0; i<threadinput->length; i++) {
@@ -37,7 +38,6 @@ void *cross_corr(void *ti) {
   }
 
   *threadinput->result /= (ref_amp * cmp_amp);
-  printf("result = %lf\n", *threadinput->result);
 
   return NULL;
 }
