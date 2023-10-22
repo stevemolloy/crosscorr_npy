@@ -1,9 +1,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <math.h>
-#include <pthread.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -24,23 +22,24 @@ double signal_amp(double *sig, int N) {
 //   double *ref_data;
 //   double *cmp_data;
 //   int length;
+//   double *result;
 // } ThreadInput;
 void *cross_corr(void *ti) {
   ThreadInput *threadinput = (ThreadInput*) ti;
-  double *result = malloc(sizeof(double));
-  double ref_amp = *threadinput->ref_data;
-  double cmp_amp = *threadinput->cmp_data;
-
-  *result = 0;
+  *threadinput->result = 0;
+  double ref_amp = signal_amp(threadinput->ref_data, threadinput->length);
+  double cmp_amp = signal_amp(threadinput->cmp_data, threadinput->length);
 
   int delay = 0;
   for (int i=0; i<threadinput->length; i++) {
     if (i-delay < 0 || i-delay >= threadinput->length) continue;
-    *result += threadinput->ref_data[i] * threadinput->cmp_data[i-delay];
+    *threadinput->result += threadinput->ref_data[i] * threadinput->cmp_data[i-delay];
   }
 
-  *result /= (ref_amp * cmp_amp);
-  pthread_exit(result);
+  *threadinput->result /= (ref_amp * cmp_amp);
+  printf("result = %lf\n", *threadinput->result);
+
+  return NULL;
 }
 
 int fill_mem_from_file(char *fname, double **data) {

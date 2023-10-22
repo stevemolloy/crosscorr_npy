@@ -34,19 +34,19 @@ int main(int argc, char *argv[]) {
 
   double cmp_cor[BPM_CNT];
   for (size_t i=0; i<BPM_CNT; i++) {
-    ThreadInput ti = (ThreadInput) {
+    ThreadInput *ti = malloc(sizeof(ThreadInput));
+    *ti = (ThreadInput) {
       ref_sum_data[i],
       cmp_sum_data[i],
       BPM_CNT,
+      &cmp_cor[i],
     };
 
-    pthread_create(&threads[i], NULL, &cross_corr, (void*)&ti);
+    pthread_create(&threads[i], NULL, &cross_corr, (void*)ti);
   }
 
   for (size_t i=0; i<BPM_CNT; i++) {
-    void *ret;
-    pthread_join(threads[i], &ret);
-    cmp_cor[i] = *(double*)ret;
+    pthread_join(threads[i], NULL);
   }
 
   FILE *fd = fopen(sav_fname, "w");
