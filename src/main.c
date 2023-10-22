@@ -42,7 +42,10 @@ int main(int argc, char *argv[]) {
     };
 
     pthread_create(&threads[i], NULL, &cross_corr, (void*)&ti);
-    // cmp_cor[i] = cross_corr(ref_sum_data[i], cmp_sum_data[i], POINT_CNT);
+  }
+
+  for (size_t i=0; i<BPM_CNT; i++) {
+    pthread_join(threads[i], NULL);
   }
 
   FILE *fd = fopen(sav_fname, "w");

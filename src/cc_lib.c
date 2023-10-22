@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <math.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -24,15 +25,11 @@ double signal_amp(double *sig, int N) {
 //   int length;
 //   double *result;
 // } ThreadInput;
-void cross_corr(void *ti) {
+void *cross_corr(void *ti) {
   ThreadInput *threadinput = (ThreadInput*) ti;
   *threadinput->result = 0;
   double ref_amp = *threadinput->ref_data;
   double cmp_amp = *threadinput->cmp_data;
-// double cross_corr(double *ref, double *cmp, int N) {
-  // double result = 0;
-  // double ref_amp = signal_amp(ref, N);
-  // double cmp_amp = signal_amp(cmp, N);
 
   int delay = 0;
   for (int i=0; i<threadinput->length; i++) {
@@ -40,8 +37,8 @@ void cross_corr(void *ti) {
     *threadinput->result += threadinput->ref_data[i] * threadinput->cmp_data[i-delay];
   }
 
-  // return result / (ref_amp * cmp_amp);
   *threadinput->result /= (ref_amp * cmp_amp);
+  pthread_exit(&ref_amp);
 }
 
 int fill_mem_from_file(char *fname, double **data) {
