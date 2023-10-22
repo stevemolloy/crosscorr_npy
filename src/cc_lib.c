@@ -3,6 +3,7 @@
 #include <math.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -23,22 +24,23 @@ double signal_amp(double *sig, int N) {
 //   double *ref_data;
 //   double *cmp_data;
 //   int length;
-//   double *result;
 // } ThreadInput;
 void *cross_corr(void *ti) {
   ThreadInput *threadinput = (ThreadInput*) ti;
-  *threadinput->result = 0;
+  double *result = malloc(sizeof(double));
   double ref_amp = *threadinput->ref_data;
   double cmp_amp = *threadinput->cmp_data;
+
+  *result = 0;
 
   int delay = 0;
   for (int i=0; i<threadinput->length; i++) {
     if (i-delay < 0 || i-delay >= threadinput->length) continue;
-    *threadinput->result += threadinput->ref_data[i] * threadinput->cmp_data[i-delay];
+    *result += threadinput->ref_data[i] * threadinput->cmp_data[i-delay];
   }
 
-  *threadinput->result /= (ref_amp * cmp_amp);
-  pthread_exit(&ref_amp);
+  *result /= (ref_amp * cmp_amp);
+  pthread_exit(result);
 }
 
 int fill_mem_from_file(char *fname, double **data) {

@@ -38,14 +38,15 @@ int main(int argc, char *argv[]) {
       ref_sum_data[i],
       cmp_sum_data[i],
       BPM_CNT,
-      &cmp_cor[i],
     };
 
     pthread_create(&threads[i], NULL, &cross_corr, (void*)&ti);
   }
 
   for (size_t i=0; i<BPM_CNT; i++) {
-    pthread_join(threads[i], NULL);
+    void *ret;
+    pthread_join(threads[i], &ret);
+    cmp_cor[i] = *(double*)ret;
   }
 
   FILE *fd = fopen(sav_fname, "w");

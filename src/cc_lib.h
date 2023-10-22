@@ -9,7 +9,6 @@ typedef struct {
   double *ref_data;
   double *cmp_data;
   int length;
-  double *result;
 } ThreadInput;
 
 void *cross_corr(void*);
