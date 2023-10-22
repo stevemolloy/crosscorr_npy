@@ -23,12 +23,10 @@ double cross_corr(double *ref, double *cmp, int N) {
   double ref_amp = signal_amp(ref, N);
   double cmp_amp = signal_amp(cmp, N);
 
-  // for (int delay=-SCAN_DELAY; delay<SCAN_DELAY; delay++) {
   int delay = 0;
-    for (int i=0; i<N; i++) {
-      if (i-delay < 0 || i-delay >= N) continue;
-      result += ref[i] * cmp[i-delay];
-    // }
+  for (int i=0; i<N; i++) {
+    if (i-delay < 0 || i-delay >= N) continue;
+    result += ref[i] * cmp[i-delay];
   }
 
   return result / (ref_amp * cmp_amp);
