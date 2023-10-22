@@ -8,6 +8,19 @@
 
 #include "cc_lib.h"
 
+float cross_corr(double *ref, double *cmp, int N) {
+  double result = 0;
+
+  for (int delay=-SCAN_DELAY; delay<SCAN_DELAY; delay++) {
+    for (int i=0; i<N; i++) {
+      if (i-delay < 0 || i-delay >= N) continue;
+      result += ref[i] * cmp[i-delay];
+    }
+  }
+
+  return result;
+}
+
 int fill_mem_from_file(char *fname, double **data) {
   int fd = open(fname, O_RDONLY);
   if (fd<0) {

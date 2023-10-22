@@ -8,21 +8,6 @@
 
 #include "cc_lib.h"
 
-#define SCAN_DELAY 5
-
-float cross_corr(double *ref, double *cmp, int N) {
-  double result = 0;
-
-  for (int delay=-SCAN_DELAY; delay<SCAN_DELAY; delay++) {
-    for (int i=0; i<N; i++) {
-      if (i-delay < 0 || i-delay >= N) continue;
-      result += ref[i] * cmp[i-delay];
-    }
-  }
-
-  return result;
-}
-
 int main(void) {
   char *ref_fname = "./data/postmortem_sum_2023-10-17T12_58_29.160517.npy";
   char *cmp_fname = "data/postmortem_sum_2023-10-16T08:10:36.022668.npy";
