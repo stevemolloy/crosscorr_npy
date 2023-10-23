@@ -7,7 +7,7 @@
 #include "cc_lib.h"
 
 int main(int argc, char *argv[]) {
-  if (argc != 4) {
+  if (argc < 3) {
     fprintf(stderr, "Usage: %s ref_file.npy comparison_file.npy results_file.csv\n", argv[0]);
     fprintf(stderr, "Incorrect number of arguments provided.\n");
     return 1;
@@ -15,7 +15,10 @@ int main(int argc, char *argv[]) {
 
   char *ref_fname = argv[1];
   char *cmp_fname = argv[2];
-  char *sav_fname = argv[3];
+  char *sav_fname = NULL;
+  if (argc > 3) {
+    sav_fname = argv[3];
+  }
   
   double **ref_sum_data = malloc(BPM_CNT * sizeof(double*));
   for (size_t i=0; i<BPM_CNT; i++) {
@@ -32,27 +35,30 @@ int main(int argc, char *argv[]) {
 
   pthread_t threads[BPM_CNT];
 
+  ThreadInput ti_s[BPM_CNT];
   double cmp_cor[BPM_CNT];
   for (size_t i=0; i<BPM_CNT; i++) {
-    ThreadInput *ti = malloc(sizeof(ThreadInput));
-    *ti = (ThreadInput) {
+    ti_s[i] = (ThreadInput) {
       ref_sum_data[i],
       cmp_sum_data[i],
       BPM_CNT,
       &cmp_cor[i],
     };
 
-    pthread_create(&threads[i], NULL, &cross_corr, (void*)ti);
+    pthread_create(&threads[i], NULL, &cross_corr, (void*)(ti_s + i));
   }
 
   for (size_t i=0; i<BPM_CNT; i++) {
     pthread_join(threads[i], NULL);
   }
 
-  FILE *fd = fopen(sav_fname, "w");
-  if (fd==NULL) {
-    fprintf(stderr, "Could not open %s: %s\n", sav_fname, strerror(errno));
-    return -1;
+  FILE *fd = stdout;
+  if (sav_fname != NULL) {
+    fd = fopen(sav_fname, "w");
+    if (fd==NULL) {
+      fprintf(stderr, "Could not open %s: %s\n", sav_fname, strerror(errno));
+      return -1;
+    }
   }
 
   fprintf(fd, "BPM, Corr_amplitude\n");
