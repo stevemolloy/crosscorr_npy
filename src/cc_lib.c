@@ -55,7 +55,7 @@ int fill_mem_from_file(char *fname, double **data) {
     return -1;
   }
 
-  char *fc = (char*)mmap(NULL, (size_t)file_stats.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+  char *fc = (char*)mmap(NULL, (size_t)file_stats.st_size, PROT_READ, MAP_SHARED, fd, 0);
   if (fc == NULL) {
     fprintf(stderr, "Could not memory-map %s: %s\n", fname, strerror(errno));
     return -1;
