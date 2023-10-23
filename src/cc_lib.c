@@ -27,9 +27,10 @@ double signal_amp(double *sig, int N) {
 void *cross_corr(void *ti) {
   ThreadInput *threadinput = (ThreadInput*) ti;
   *threadinput->result = 0;
+  // printf("threadinput->length = %d\n", threadinput->length);
   double ref_amp = signal_amp(threadinput->ref_data, threadinput->length);
   double cmp_amp = signal_amp(threadinput->cmp_data, threadinput->length);
-  printf("ref_amp = %lf :: cmp_amp = %lf\n", ref_amp, cmp_amp);
+  // printf("ref_amp = %lf :: cmp_amp = %lf\n", ref_amp, cmp_amp);
 
   int delay = 0;
   for (int i=0; i<threadinput->length; i++) {

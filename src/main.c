@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     ti_s[i] = (ThreadInput) {
       ref_sum_data[i],
       cmp_sum_data[i],
-      BPM_CNT,
+      POINT_CNT,
       &cmp_cor[i],
     };
 
