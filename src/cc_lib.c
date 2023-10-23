@@ -5,8 +5,11 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "cc_lib.h"
+
+#define DELAY 0 // In case the data should be convolved
 
 double signal_amp(double *sig, int N) {
   double result = 0;
@@ -18,18 +21,20 @@ double signal_amp(double *sig, int N) {
   return sqrt(result);
 }
 
-double cross_corr(double *ref, double *cmp, int N) {
-  double result = 0;
-  double ref_amp = signal_amp(ref, N);
-  double cmp_amp = signal_amp(cmp, N);
+void *cross_corr(void *ti) {
+  ThreadInput *threadinput = (ThreadInput*) ti;
+  *threadinput->result = 0;
+  double ref_amp = signal_amp(threadinput->ref_data, threadinput->length);
+  double cmp_amp = signal_amp(threadinput->cmp_data, threadinput->length);
 
-  int delay = 0;
-  for (int i=0; i<N; i++) {
-    if (i-delay < 0 || i-delay >= N) continue;
-    result += ref[i] * cmp[i-delay];
+  for (int i=0; i<threadinput->length; i++) {
+    if (i-DELAY < 0 || i-DELAY >= threadinput->length) continue;
+    *threadinput->result += threadinput->ref_data[i] * threadinput->cmp_data[i-DELAY];
   }
 
-  return result / (ref_amp * cmp_amp);
+  *threadinput->result /= (ref_amp * cmp_amp);
+
+  return NULL;
 }
 
 int fill_mem_from_file(char *fname, double **data) {
@@ -45,7 +50,7 @@ int fill_mem_from_file(char *fname, double **data) {
     return -1;
   }
 
-  char *fc = (char*)mmap(NULL, (size_t)file_stats.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+  char *fc = (char*)mmap(NULL, (size_t)file_stats.st_size, PROT_READ, MAP_SHARED, fd, 0);
   if (fc == NULL) {
     fprintf(stderr, "Could not memory-map %s: %s\n", fname, strerror(errno));
     return -1;
@@ -57,6 +62,9 @@ int fill_mem_from_file(char *fname, double **data) {
   for (size_t i=0; i<BPM_CNT; i++) {
     memcpy(data[i], data_start + i*POINT_CNT*sizeof(double), POINT_CNT*sizeof(double));
   }
+
+  munmap(fc, (size_t)file_stats.st_size);
+  close(fd);
 
   return 0;
 }
