@@ -8,6 +8,8 @@
 
 #include "cc_lib.h"
 
+#define DELAY 0 // In case the data should be convolved
+
 double signal_amp(double *sig, int N) {
   double result = 0;
 
@@ -18,24 +20,15 @@ double signal_amp(double *sig, int N) {
   return sqrt(result);
 }
 
-// typedef struct {
-//   double *ref_data;
-//   double *cmp_data;
-//   int length;
-//   double *result;
-// } ThreadInput;
 void *cross_corr(void *ti) {
   ThreadInput *threadinput = (ThreadInput*) ti;
   *threadinput->result = 0;
-  // printf("threadinput->length = %d\n", threadinput->length);
   double ref_amp = signal_amp(threadinput->ref_data, threadinput->length);
   double cmp_amp = signal_amp(threadinput->cmp_data, threadinput->length);
-  // printf("ref_amp = %lf :: cmp_amp = %lf\n", ref_amp, cmp_amp);
 
-  int delay = 0;
   for (int i=0; i<threadinput->length; i++) {
-    if (i-delay < 0 || i-delay >= threadinput->length) continue;
-    *threadinput->result += threadinput->ref_data[i] * threadinput->cmp_data[i-delay];
+    if (i-DELAY < 0 || i-DELAY >= threadinput->length) continue;
+    *threadinput->result += threadinput->ref_data[i] * threadinput->cmp_data[i-DELAY];
   }
 
   *threadinput->result /= (ref_amp * cmp_amp);
