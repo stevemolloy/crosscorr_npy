@@ -7,17 +7,31 @@
 #include "cc_lib.h"
 
 int main(int argc, char *argv[]) {
+  FILE *fd = NULL;
+
   if (argc < 2) {
     fprintf(stderr, "Usage: %s ref_file.npy comparison_file.npy results_file.csv\n", argv[0]);
     fprintf(stderr, "Incorrect number of arguments provided.\n");
     return 1;
   }
 
+  char *fname_cheatsheet_filename = "fname_cheatsheet.txt";
+  fd = fopen(fname_cheatsheet_filename, "w");
+  if (fd==NULL) {
+     fprintf(stderr, "Could not open %s: %s\n", fname_cheatsheet_filename, strerror(errno));
+     return -1;
+  }
+  for (int i=1; i<argc; i++) {
+    fprintf(fd, "%d, %s\n", i, argv[i]);
+  }
+  fclose(fd);
+
+  int comp_num = 0;
   int total_comparisons = ((argc-1)*(argc-1) + argc) / 2;
   for (int i=1; i<argc; i++) {
     for (int j=i; j<argc; j++) {
-      int comp_num = (i-1)*argc + (j-1);
-      printf("%4d / %d :: Comparing  %s  with  %s\n", comp_num, total_comparisons, argv[i], argv[j]);
+      comp_num++;
+      printf("%4d / %d :: (%2d/%2d) Comparing  %s  with  %s\n", comp_num, total_comparisons, i, j, argv[i], argv[j]);
 
       char *ref_fname = argv[i];
       char *cmp_fname = argv[j];
