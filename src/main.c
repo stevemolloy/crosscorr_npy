@@ -29,26 +29,26 @@ int main(int argc, char *argv[]) {
   int comp_num = 0;
   int total_comparisons = ((argc-1)*(argc-1) + argc) / 2;
   for (int i=1; i<argc; i++) {
+    char *ref_fname = argv[i];
+
+    double **ref_sum_data = malloc(BPM_CNT * sizeof(double*));
+    for (size_t i=0; i<BPM_CNT; i++) {
+      ref_sum_data[i] = malloc(POINT_CNT * sizeof(double));
+    }
+    if (fill_mem_from_file(ref_fname, ref_sum_data) < 0) return 1;
+
     for (int j=i; j<argc; j++) {
       comp_num++;
       printf("%4d / %d :: (%2d/%2d) Comparing  %s  with  %s\n", comp_num, total_comparisons, i, j, argv[i], argv[j]);
 
-      char *ref_fname = argv[i];
       char *cmp_fname = argv[j];
       char sav_fname[256];
       snprintf(sav_fname, 256, "compare_%03d_%03d.txt", i, j);
       
-      double **ref_sum_data = malloc(BPM_CNT * sizeof(double*));
-      for (size_t i=0; i<BPM_CNT; i++) {
-        ref_sum_data[i] = malloc(POINT_CNT * sizeof(double));
-      }
-
       double **cmp_sum_data = malloc(BPM_CNT * sizeof(double*));
       for (size_t i=0; i<BPM_CNT; i++) {
         cmp_sum_data[i] = malloc(POINT_CNT * sizeof(double));
       }
-
-      if (fill_mem_from_file(ref_fname, ref_sum_data) < 0) return 1;
       if (fill_mem_from_file(cmp_fname, cmp_sum_data) < 0) return 1;
 
       pthread_t threads[BPM_CNT];
@@ -83,13 +83,16 @@ int main(int argc, char *argv[]) {
 
       for (size_t i=0; i<BPM_CNT; i++) {
         free(cmp_sum_data[i]);
-        free(ref_sum_data[i]);
       }
       free(cmp_sum_data);
-      free(ref_sum_data);
 
       fclose(fd);
     }
+  
+    for (size_t i=0; i<BPM_CNT; i++) {
+      free(ref_sum_data[i]);
+    }
+    free(ref_sum_data);
   }
 
   return 0;
