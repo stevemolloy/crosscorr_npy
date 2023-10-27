@@ -10,14 +10,17 @@
 #include "cc_lib.h"
 
 #define DELAY 0 // In case the data should be convolved
+#define MAX_TIMEPT 175695 // When the current has gone to zero
 
 double signal_amp(double *sig, int N) {
   double result = 0;
 
   for (size_t i=0; i<(size_t)N; i++) {
+    if (i>MAX_TIMEPT) break;
     result += sig[i] * sig[i];
   }
 
+  printf("result = %lf\n", result);
   return sqrt(result);
 }
 
@@ -29,6 +32,7 @@ void *cross_corr(void *ti) {
 
   for (int i=0; i<threadinput->length; i++) {
     if (i-DELAY < 0 || i-DELAY >= threadinput->length) continue;
+    if (i>MAX_TIMEPT) continue;
     *threadinput->result += threadinput->ref_data[i] * threadinput->cmp_data[i-DELAY];
   }
 
